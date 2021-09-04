@@ -61,6 +61,3 @@ def plot_map(routeMap):
 if __name__ == "__main__":
     mapping(angleList)
 
-
-if __name__ == "__main__":
-    mapping(angleList)
