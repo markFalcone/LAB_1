@@ -1,7 +1,6 @@
 import picar_4wd as fc
 import numpy as np
 import math
-import time
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -11,10 +10,20 @@ angleList = np.arange(-60,60,10)
 routeMap = np.zeros((200,100))
 carPos = [100, 0]
 
+matplotlib.use('Agg')
+
+angleList = np.arange(-60,60,10)
+routeMap = np.zeros((200,100))
+carPos = [100, 0]
+
 def get_coord_at(angle):
     dist = fc.get_distance_at(angle)
-    x = int(dist * np.sin(math.radians(angle))) + carPos[0]
-    y = int(dist * np.cos(math.radians(angle))) + carPos[1]
+    if dist == -2:
+        x = -1
+        y = -1
+    else:
+        x = int(dist * np.sin(math.radians(angle))) + carPos[0]
+        y = int(dist * np.cos(math.radians(angle))) + carPos[1]
    # print(dist)
     return x, y
 
@@ -23,8 +32,11 @@ def mapping(angleList):
     y_coords = []
     for angle in angleList:
         x, y = get_coord_at(angle)
-        x_coords.append(x)
-        y_coords.append(y)
+        if x == -1 and y == -1:
+            continue
+        else:
+            x_coords.append(x)
+            y_coords.append(y)
    # x_coords = np.array(x_coords)
    # y_coords = np.array(y_coords)
    # print(x_coords)
@@ -32,7 +44,11 @@ def mapping(angleList):
 
 
     for i in x_coords:
+        if i<0 or i>200:
+            continue
         for j in y_coords:
+            if j > 100:
+                continue
             routeMap[i,j] = 1
     print(routeMap)
     return routeMap
@@ -40,6 +56,11 @@ def mapping(angleList):
 def plot_map(routeMap):
     plt.matshow(routeMap)
     plt.show()
+
+
+if __name__ == "__main__":
+    mapping(angleList)
+
 
 if __name__ == "__main__":
     mapping(angleList)
