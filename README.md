@@ -1,6 +1,6 @@
 # LAB_1
 
-### MARK PART 1 code 
+### [LAB DOC](https://docs.google.com/document/d/1JZfXAQS5a3DvPlnzik5bmMuXU5qJrlOI8d5KiSAAgbg/edit)  
 picarexamples >>Mark_lab1_part1.py 
 - this code is where the car ultrosonic detects a objects backs up and randomly turns left or right and trues to go forward. This is roubma like 
 
