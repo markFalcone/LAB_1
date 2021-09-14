@@ -1,23 +1,17 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.signal as signal
+from warnings import warn
+import heapq
+import cv2 
+from scipy.spatial import Voronoi, voronoi_plot_2d
 
-def draw_path(maze, path, intensity = 2):
-    maze = np.array(maze)
-    for ind in path:
-        maze[ind[0], ind[1]] = intensity
-    plt.matshow(maze, origin = 'lower')
-	
-# Dilate the obstacle cells with a kernal by convolution
-def obstacle_dilate(maze, kernal):
-    m = signal.convolve2d(maze, kernal)
-    return (m>0).astype(int).tolist()
-
-# Modifed from codes by Nicholas Swift
+# Credit for this: Nicholas Swift
 # as found at https://medium.com/@nicholas.w.swift/easy-a-star-pathfinding-7e6689c7f7b2
 
-class Node():
-    """A node class for A* Pathfinding"""
+class Node:
+    """
+    A node class for A* Pathfinding
+    """
 
     def __init__(self, parent=None, position=None):
         self.parent = parent
@@ -29,10 +23,35 @@ class Node():
 
     def __eq__(self, other):
         return self.position == other.position
+    
+    def __repr__(self):
+      return f"{self.position} - g: {self.g} h: {self.h} f: {self.f}"
+
+    # defining less than for purposes of heap queue
+    def __lt__(self, other):
+      return self.f < other.f
+    
+    # defining greater than for purposes of heap queue
+    def __gt__(self, other):
+      return self.f > other.f
+
+def return_path(current_node):
+    path = []
+    current = current_node
+    while current is not None:
+        path.append(current.position)
+        current = current.parent
+    return path[::-1]  # Return reversed path
 
 
-def astar(maze, start, end):
-    """Returns a list of tuples as a path from the given start to the given end in the given maze"""
+def astar(maze, start, end, allow_diagonal_movement = False):
+    """
+    Returns a list of tuples as a path from the given start to the given end in the given maze
+    :param maze:
+    :param start:
+    :param end:
+    :return:
+    """
 
     # Create start and end node
     start_node = Node(None, start)
@@ -44,36 +63,41 @@ def astar(maze, start, end):
     open_list = []
     closed_list = []
 
-    # Add the start node
-    open_list.append(start_node)
+    # Heapify the open_list and Add the start node
+    heapq.heapify(open_list) 
+    heapq.heappush(open_list, start_node)
+
+    # Adding a stop condition
+    outer_iterations = 0
+    max_iterations = (len(maze[0]) * len(maze) // 2)
+
+    # what squares do we search
+    adjacent_squares = ((0, -1), (0, 1), (-1, 0), (1, 0))
+    if allow_diagonal_movement:
+        adjacent_squares = ((0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1),)
 
     # Loop until you find the end
     while len(open_list) > 0:
+        outer_iterations += 1
 
+        if outer_iterations > max_iterations:
+          # if we hit this point return the path such as it is
+          # it will not contain the destination
+          warn("giving up on pathfinding too many iterations")
+          return return_path(current_node)       
+        
         # Get the current node
-        current_node = open_list[0]
-        current_index = 0
-        for index, item in enumerate(open_list):
-            if item.f < current_node.f:
-                current_node = item
-                current_index = index
-
-        # Pop current off open list, add to closed list
-        open_list.pop(current_index)
+        current_node = heapq.heappop(open_list)
         closed_list.append(current_node)
 
         # Found the goal
         if current_node == end_node:
-            path = []
-            current = current_node
-            while current is not None:
-                path.append(current.position)
-                current = current.parent
-            return path[::-1] # Return reversed path
+            return return_path(current_node)
 
         # Generate children
         children = []
-        for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]: # Adjacent squares
+        
+        for new_position in adjacent_squares: # Adjacent squares
 
             # Get node position
             node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
@@ -94,50 +118,36 @@ def astar(maze, start, end):
 
         # Loop through children
         for child in children:
-
             # Child is on the closed list
-            for closed_child in closed_list:
-                if child == closed_child:
-                    continue
+            if len([closed_child for closed_child in closed_list if closed_child == child]) > 0:
+                continue
 
             # Create the f, g, and h values
             child.g = current_node.g + 1
-            
-            #Euclidean distance
-            #child.h = ((child.position[0] - end_node.position[0]) ** 2) + ((child.position[1] - end_node.position[1]) ** 2)
-            
-            #Manhatten distance
-            child.h = np.abs(child.position[0] - end_node.position[0]) + np.abs(child.position[1] - end_node.position[1])
+            child.h = ((child.position[0] - end_node.position[0]) ** 2) + ((child.position[1] - end_node.position[1]) ** 2)
             child.f = child.g + child.h
 
             # Child is already in the open list
-            for open_node in open_list:
-                if child == open_node and child.g > open_node.g:
-                    continue
+            if len([open_node for open_node in open_list if child.position == open_node.position and child.g > open_node.g]) > 0:
+                continue
 
             # Add the child to the open list
-            open_list.append(child)
-			
-def main():
-	maze = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+            heapq.heappush(open_list, child)
 
-	kernal = np.array([[0,1,0],[1,1,1],[0,1,0]]) #can change the kernal size and definition 
+    warn("Couldn't get a path to destination")
+    return None
 	
-	start = (2, 2)
-	end = (2, 10)
-
-	path = astar(m, start, end)
-	print(path)
-	draw_path(maze, path, intensity = 2)
+	# Use kernel to thicken the obstacle
+def obstacle_clearance(routeMap, kernel_size = 5):
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size))
+    maze = cv2.dilate(routeMap, kernel)
+    return maze
 	
-if __name__ == "__main__":
-	main()
+	# draw the path found by A* algo
+def draw_path(maze, path):
+    maze = np.array(maze)
+    for ind in path:
+        maze[ind[0], ind[1]] = 4
+    plt.matshow(maze)
+	
+	
