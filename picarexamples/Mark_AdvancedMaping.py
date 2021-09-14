@@ -14,9 +14,10 @@ def angle_distance():
         if dist == -2:
             #dist = 100
             continue
-        y_CORD = math.floor(dist*math.sin(deg))
+        rad = math.radians(deg)
+        y_CORD = math.floor(dist*math.sin(rad))
         
-        x_CORD = math.floor(dist*math.cos(deg))
+        x_CORD = math.floor(dist*math.cos(rad))
         x= np.append(x,x_CORD)
         y = np.append(y,y_CORD)
         time.sleep(0.1)
