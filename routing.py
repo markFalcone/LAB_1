@@ -153,27 +153,28 @@ def draw_path(maze, path):
         maze[ind[0], ind[1]] = 4
     plt.matshow(maze)
     
-def angle_distance():
-    x = np.array([0])
-    y = np.array([0])
-    for deg in range(-90,90,5):
-        print('the degree is',(deg), 'and the distence is:', fc.get_distance_at(deg))
-        dist =fc.get_distance_at(deg)
-        if dist == -2:
-            #dist = 100
-            continue
-        rad = math.radians(deg)
-        y_CORD = math.floor(dist*math.sin(rad))
-        
-        x_CORD = math.floor(dist*math.cos(rad))
-        x= np.append(x,x_CORD)
-        y = np.append(y,y_CORD)
-        time.sleep(0.1)
-    #print(x)
-    #print(y)
-    #plt.scatter(x,y)
-    #plt.show()
-    return x,y                                                    
+# def angle_distance():
+#     x = np.array([0])
+#     y = np.array([0])
+# 
+#     for deg in range(-90,90,5):
+#         print('the degree is',(deg), 'and the distence is:', fc.get_distance_at(deg))
+#         dist =fc.get_distance_at(deg)
+#         if dist == -2:
+#             #dist = 100
+#             continue
+#         rad = (deg/90)*(np.pi/2)
+#         y_CORD = math.floor(dist*math.sin(rad))
+#         
+#         x_CORD = math.floor(dist*math.cos(rad))
+#         x= np.append(x,x_CORD)
+#         y = np.append(y,y_CORD)
+#         time.sleep(0.1)
+#     #print(x)
+#     #print(y)
+#     #plt.scatter(x,y)
+#     #plt.show()
+#     return x,y                                                    
     
 def plot(mat, x_cord, y_cord):
     for i in range(x_cord.size):
@@ -193,6 +194,41 @@ def plot(mat, x_cord, y_cord):
 #     print(count)
     return mat
     
+def angle_distance():
+    x = np.array([0])
+    y = np.array([0])
+    for deg in range(-90,90,1):
+        dist =fc.get_distance_at(deg)
+        print(dist)
+        if dist == -2:
+            dist = 100
+        piDegree = (deg/90)*(np.pi/2)
+        #y_CORD = (-1)*math.floor(dist*math.sin(piDegree))
+        y_CORD = math.floor((-1)*dist*math.sin(piDegree))
+        x_CORD = math.floor(dist*math.cos(piDegree))
+        abs_x =0
+        abs_y =0
+        if x_CORD <0 :
+            abs_x = (-1)* x_CORD
+        else :
+             abs_x = x_CORD
+        if y_CORD <0 :
+            abs_y = (-1)* y_CORD
+        else :
+             abs_y = y_CORD    
+
+
+        if abs_x < 100 and abs_y < 100:
+            x= np.append(x,x_CORD)
+            y = np.append(y,y_CORD)
+        time.sleep(0.1)
+        plt.plot(y,x ,'o', linewidth = 0.2)
+
+    plt.grid(True)
+    #plt.show()
+
+    return x,y              
+
     
 def build_mat(N):
 #     mat = np.zeros(N*N)
@@ -241,21 +277,44 @@ def move_right():
 
 
 def move_instruction(path_arr, maze):
+    print(type(path_arr))
     car_pos = path_arr[0]
     count = 0
+    
+    
     for location in path_arr[1:]:
-        if (list(location - car_pos) == [0,1]) or (list(location - car_pos) == [0,-1]):
+#         print (type (car_pos))
+#         print(car_pos)
+#         
+#         print (type (list(location)))
+#         print(location)
+        print("location 0")
+        print(location[0])
+        print("location 1")
+        print(location[1])
+        
+        #if ((location - car_pos) == [0,1]) or ((location - car_pos) == [0,-1]):
+        
+        lX= location[0]
+        lY= location[1]
+        cpX= car_pos[0]
+        cpY= car_pos[1]
+        calc_diff = [(lX-cpX),(lY-cpY)]
+        print (calc_diff)
+        print(calc_diff == [0,1])
+        if (calc_diff == [0,1]) or (calc_diff == [0,-1]):
+        
             print("forward")
             move_forward()
             car_pos = location
             count += 1
-        
-        elif list(location - car_pos) == [1,0]:
+        #elif list(location - car_pos) == [1,0]:
+        elif calc_diff == [1,0]:
             print("turn right")
             move_right()
             break
         
-        elif list(location - car_pos) == [-1,0]:
+        elif calc_diff == [-1,0]:
             move_left()
             print("turn left")
             break
@@ -269,20 +328,22 @@ def move_instruction(path_arr, maze):
 
 
 
-maze = build_mat(250)
+maze = build_mat(200)
     ## ** Getting distances **##
 x,y = angle_distance()
 
     ## ** Send x and y to be plotted  **#
 H = plot(maze, x,y)
-    #plt.scatter(H)
+plt.matshow(H, cmap='Blues')
+#plt.show()
 
-kernal = np.array([[0,1,0],[1,1,1],[0,1,0]]) #can change the kernal size and definition 
+#kernal = np.array([[0,1,0],[1,1,1],[0,1,0]]) #can change the kernal size and definition 
 
-start = (2, 2)
-end = (2, 10)
+start = (0, 0)
+end = (0, 100)
 path_arr = astar(H, start, end)
 print(path_arr)
+
     #draw_path(maze, path, intensity = 2)
 car_pos = (2,2)
 #while path_arr.shape[0] > 1:
