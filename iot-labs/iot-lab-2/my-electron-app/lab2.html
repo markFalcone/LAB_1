@@ -1,0 +1,44 @@
+<html lang="en" style="font-size: 153.523px;">
+<script src="index.js"></script>
+<head>
+	<body style="background-color:lightsteelblue;">
+		<table>
+			<tbody>
+				<tr>
+					<td>
+						<img class="" src="arrow.png" onclick="carMovement('left')" style="transform:rotate(-90deg);" width="100">
+					</td>
+				<td>
+					<div style="display: inline-grid;">
+						<div style="">
+							<img class="" onclick="carMovement('forward')" src="arrow.png" style="" width="100">
+						</div>
+						<div style="margin-top: 100px;">
+							<img class="" src="arrow.png" onclick="carMovement('backward')" style="transform:rotate(180deg);" width="100">
+						</div>
+					</div>
+				</td>
+				<td>
+					<img class="" src="arrow.png" onclick="carMovement('right')" style="transform:rotate(90deg);" width="100">
+				</td>  
+				<td>
+					<img class="" src="stop.jpeg" onclick="carMovement('stop')" width="100">
+				</td>
+				<td>
+				</td>   
+				<td>
+                    <div style="display: inline-grid;">
+						<div style="" id="battery-status">
+						Power Status :
+						</div>   
+						<div style="" id="car-status">
+						Car Status:
+						</div>   
+						</div>
+                </td>
+				</tr>
+			</tbody>
+		</table>
+	
+	</body>
+</html>
