@@ -1,7 +1,6 @@
 import socket
 import picar_4wd as fc
 import time
-from threading import Thread
 import json
 
 HOST = "192.168.1.89" # IP address of your Raspberry PI
