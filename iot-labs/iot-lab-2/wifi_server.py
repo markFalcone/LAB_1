@@ -59,7 +59,7 @@ def server():
         except Exception as e: 
             print("Closing socket")
             print(e)
-            #client.close()
+            client.close()
 
 if __name__ == '__main__':
 
